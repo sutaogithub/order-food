@@ -2,24 +2,24 @@ package com.sutao.orderfood;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
-import com.sutao.customview.slideshow.SlideShow;
+import com.sutao.base.BaseActivity;
+import com.sutao.customview.slideshow.SlideShowView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
-    private SlideShow mSlideShow;
+    private SlideShowView mSlideShow;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mSlideShow = (SlideShow) findViewById(R.id.view_slide);
+        mSlideShow = (SlideShowView) findViewById(R.id.view_slide);
 
         Bitmap first = BitmapFactory.decodeResource(getResources(), R.drawable.first);
         Bitmap second = BitmapFactory.decodeResource(getResources(), R.drawable.second);
@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
         mSlideShow.setBitmaps(list);
 
-        mSlideShow.setOnItemClickListener(new SlideShow.OnItemClickListener() {
+        mSlideShow.setOnItemClickListener(new SlideShowView.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
                 Toast.makeText(MainActivity.this, position+"", Toast.LENGTH_SHORT).show();

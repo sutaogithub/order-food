@@ -1,6 +1,7 @@
 package com.sutao.customview.slideshow;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.v4.view.PagerAdapter;
@@ -27,7 +28,7 @@ import java.util.List;
  * @brief 轮播图控件
  * @date 2017/3/9
  */
-public class SlideShow extends FrameLayout implements View.OnClickListener {
+public class SlideShowView extends FrameLayout implements View.OnClickListener {
 
     private final int DOT_CONTAINER_HEIGHT = 30;
 
@@ -35,6 +36,8 @@ public class SlideShow extends FrameLayout implements View.OnClickListener {
     private int mDotSize = 10;
     private int mDotMargin = 5;
     private int mSlideInteval = 1500;
+    private int mDotSelect = R.drawable.dot_select;
+    private int mDotUnselect = R.drawable.dot_unselect;
 
     private ViewPager mViewPager;
     private SlidePagerAdapter mAdapter;
@@ -47,11 +50,11 @@ public class SlideShow extends FrameLayout implements View.OnClickListener {
 
     private OnItemClickListener mListener;
 
-    public SlideShow(Context context) {
+    public SlideShowView(Context context) {
         super(context, null);
     }
 
-    public SlideShow(Context context, AttributeSet attrs) {
+    public SlideShowView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
         mViews = new ArrayList<>();
@@ -62,8 +65,19 @@ public class SlideShow extends FrameLayout implements View.OnClickListener {
                 postDelayed(this, mSlideInteval);
             }
         };
+        initAttrs(context, attrs);
         initView();
         initEvent();
+    }
+
+    private void initAttrs(Context context, AttributeSet attrs) {
+        TypedArray arr = context.obtainStyledAttributes(attrs, R.styleable.SlideShowView);
+        mDotMargin = (int) arr.getDimension(R.styleable.SlideShowView_dot_interval, UIUtils.getDp(context, mDotMargin));
+        mDotSize = (int) arr.getDimension(R.styleable.SlideShowView_dot_size, UIUtils.getDp(context, mDotSize));
+        mDotSelect = arr.getResourceId(R.styleable.SlideShowView_img_selected, mDotSelect);
+        mDotUnselect = arr.getResourceId(R.styleable.SlideShowView_img_unselected, mDotUnselect);
+        arr.recycle();
+
     }
 
     private void initEvent() {
@@ -115,10 +129,10 @@ public class SlideShow extends FrameLayout implements View.OnClickListener {
 
     private void updateDot(int position) {
         for (int i = 0; i < mDotContainer.getChildCount(); i++) {
-            mDotContainer.getChildAt(i).setBackgroundResource(R.drawable.dot_unselect);
+            mDotContainer.getChildAt(i).setBackgroundResource(mDotUnselect);
         }
 
-        mDotContainer.getChildAt(position % mViews.size()).setBackgroundResource(R.drawable.dot_select);
+        mDotContainer.getChildAt(position % mViews.size()).setBackgroundResource(mDotSelect);
     }
 
 
@@ -145,9 +159,9 @@ public class SlideShow extends FrameLayout implements View.OnClickListener {
         mDotContainer.removeAllViews();
         for (int i = 0; i < bitmaps.size(); i++) {
             View view = new View(mContext);
-            view.setBackgroundResource(R.drawable.dot_unselect);
-            LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams((int) UIUtils.getDp(mContext, mDotSize), (int) UIUtils.getDp(mContext, mDotSize));
-            params1.setMargins((int) UIUtils.getDp(mContext, mDotMargin), 0, (int) UIUtils.getDp(mContext, mDotMargin), 0);
+            view.setBackgroundResource(mDotUnselect);
+            LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams(mDotSize, mDotSize);
+            params1.setMargins(mDotMargin, 0, mDotMargin, 0);
             mDotContainer.addView(view, params1);
         }
 
@@ -166,6 +180,16 @@ public class SlideShow extends FrameLayout implements View.OnClickListener {
 
     public void stopSlide() {
         getHandler().removeCallbacks(mSlideTask);
+    }
+
+    public int getSlideInteval() {
+        return mSlideInteval;
+    }
+
+    public void setmSlideInteval(int slideInteval) {
+        this.mSlideInteval = slideInteval;
+        stopSlide();
+        startSlide();
     }
 
     @Override

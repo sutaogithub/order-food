@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SlideShowView">
+        <attr name="img_selected" format="reference" />
+        <attr name="img_unselected" format="reference" />
+        <attr name="dot_size" format="dimension" />
+        <attr name="dot_interval" format="dimension" />
+    </declare-styleable>
+</resources>

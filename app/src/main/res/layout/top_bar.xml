@@ -14,14 +14,26 @@
         android:text="正佳点"
         android:layout_centerVertical="true" />
 
+
+
     
     <ImageView
         android:id="@+id/img_scan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:src="@drawable/action_bar_btn_scan"/>
-    
-    
+        android:src="@drawable/qrcode_scan"/>
+
+
+    <ImageView
+        android:id="@+id/img_shop_car"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@id/img_scan"
+        android:layout_marginRight="10dp"
+        android:src="@drawable/shopping_car"/>
+
+
 </RelativeLayout>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--二维码扫表界面颜色-->
+    <color name="status_text">#ffffffff</color>
+    <color name="transparent">#00000000</color>
+    <color name="viewfinder_frame">#ff000000</color>
+    <color name="viewfinder_laser">#ffff0000</color>
+    <color name="viewfinder_scan_rect">#fff700</color>
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="color_black">#000000</color>
+
+</resources>

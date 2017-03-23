@@ -5,15 +5,23 @@
       <GradleProjectSettings>
         <option name="distributionType" value="LOCAL" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="D:\AndroidStudio\gradle\gradle-2.14.1" />
+        <option name="gradleHome" value="D:\Android Studio\gradle\gradle-2.10" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/customview" />
+            <option value="$PROJECT_DIR$/zxing" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
+        <option name="myModules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/customview" />
+            <option value="$PROJECT_DIR$/zxing" />
+          </set>
+        </option>
       </GradleProjectSettings>
     </option>
   </component>

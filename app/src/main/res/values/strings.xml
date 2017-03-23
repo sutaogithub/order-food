@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">OrderFood</string>
+    <string name="food_all_price">共%1$s元</string>
+    <string name="order">下单</string>
+    <string name="food_selling">月售%1$s份 | 好评率%2$s</string>
+    <string name="food_size">规格</string>
+    <string name="food_add_car">加入购物车</string>
+    <string name="food_desc">商品描述:</string>
+
+    <!--登陆注册页-->
+    <string name="sign_in">注册</string>
+    <string name="buyer_in">食客注册</string>
+    <string name="seller_in">店家注册</string>
+
 </resources>

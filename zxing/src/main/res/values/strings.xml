@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Zxing</string>
+
+
+    <!--二维码扫描相关-->
+    <string name="cvt1_qrcode_msg_default_status">将二维码放入框内即可自动扫描</string>
+    <string name="cvt1_qrcode_camera_framework_bug">Sorry, the Android camera encountered a problem. You may need to restart the device.</string>
+    <string name="cvt1_qrcode_button_ok">OK</string>
+    <string name="cvt1_qrcode_title">QrC</string>
+</resources>

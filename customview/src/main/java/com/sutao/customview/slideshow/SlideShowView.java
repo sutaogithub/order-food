@@ -168,7 +168,6 @@ public class SlideShowView extends FrameLayout implements View.OnClickListener {
         if (mAdapter == null) {
             mAdapter = new SlidePagerAdapter();
         }
-
         mViewPager.setAdapter(mAdapter);
         mViewPager.setCurrentItem(mViews.size() * 40000);
         updateDot(mViews.size() * 40000);

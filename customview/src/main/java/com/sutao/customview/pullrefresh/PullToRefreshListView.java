@@ -188,7 +188,6 @@ public class PullToRefreshListView extends PullToRefreshBase<ListView> implement
         if ((null != mLoadMoreFooterLayout) && (mLoadMoreFooterLayout.getState() == State.NO_MORE_DATA)) {
             return false;
         }
-        
         return true;
     }
     

@@ -16,6 +16,7 @@
 
 package com.example.zxing.others;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 
 import com.example.zxing.R;
@@ -41,14 +42,16 @@ final class DecodeHandler extends Handler {
 
   private static final String TAG = DecodeHandler.class.getSimpleName();
 
-  private final CaptureActivity activity;
+  private final Activity activity;
   private final MultiFormatReader multiFormatReader;
   private boolean running = true;
+  private final OnDecodeInterface dependence;
 
-  DecodeHandler(CaptureActivity activity, Map<DecodeHintType,Object> hints) {
+  DecodeHandler(Activity activity, Map<DecodeHintType,Object> hints, OnDecodeInterface dependence) {
     multiFormatReader = new MultiFormatReader();
     multiFormatReader.setHints(hints);
     this.activity = activity;
+    this.dependence = dependence;
   }
 
   @Override
@@ -77,7 +80,7 @@ final class DecodeHandler extends Handler {
   private void decode(byte[] data, int width, int height) {
     long start = System.currentTimeMillis();
     Result rawResult = null;
-    PlanarYUVLuminanceSource source = activity.getmCameraManager().buildLuminanceSource(data, width, height);
+    PlanarYUVLuminanceSource source = dependence.getmCameraManager().buildLuminanceSource(data, width, height);
     if (source != null) {
       BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
       try {
@@ -90,7 +93,7 @@ final class DecodeHandler extends Handler {
       }
     }
 
-    Handler handler = activity.getHandler();
+    Handler handler = dependence.getHandler();
     if (rawResult != null) {
       // Don't log the barcode contents for security.
       long end = System.currentTimeMillis();

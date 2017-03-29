@@ -5,10 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".main.MainActivity">
+    tools:context=".buyermain.BuyerMainActivity">
 
 
-    <include layout="@layout/top_bar"/>
+    <include layout="@layout/buyer_top_bar"/>
 
     <com.sutao.customview.pullrefresh.PullToRefreshRecycleView
         android:id="@+id/list_content"

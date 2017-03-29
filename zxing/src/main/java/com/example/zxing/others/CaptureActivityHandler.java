@@ -23,7 +23,6 @@ import android.graphics.BitmapFactory;
 import android.provider.Browser;
 
 import com.example.zxing.R;
-import com.example.zxing.activity.CaptureActivity;
 import com.example.zxing.camera.CameraManager;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
@@ -49,12 +48,11 @@ public final class CaptureActivityHandler extends Handler {
 
   private static final String TAG = CaptureActivityHandler.class.getSimpleName();
 
-  private final CaptureActivity activity;
+  private final Activity activity;
   private final DecodeThread decodeThread;
   private State state;
   private final CameraManager cameraManager;
-
-
+  private final OnDecodeInterface dependence;
 
   private enum State {
     PREVIEW,
@@ -62,16 +60,20 @@ public final class CaptureActivityHandler extends Handler {
     DONE
   }
 
-  public CaptureActivityHandler(CaptureActivity activity,
+  public CaptureActivityHandler(Activity activity,
                                 Collection<BarcodeFormat> decodeFormats,
                                 Map<DecodeHintType, ?> baseHints,
                                 String characterSet,
-                                CameraManager cameraManager) {
+                                CameraManager cameraManager,
+                                OnDecodeInterface dependence) {
     this.activity = activity;
-    decodeThread = new DecodeThread(activity, decodeFormats, baseHints, characterSet,
-        new ViewfinderResultPointCallback(activity.getViewfinderView()));
+    this.dependence =dependence;
+    decodeThread = new DecodeThread(dependence,activity, decodeFormats, baseHints, characterSet,
+        new ViewfinderResultPointCallback(this.dependence.getViewfinderView()));
     decodeThread.start();
     state = State.SUCCESS;
+
+
 
     // Start ourselves capturing previews and decoding.
     this.cameraManager = cameraManager;
@@ -98,7 +100,7 @@ public final class CaptureActivityHandler extends Handler {
         }
         scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);
       }
-      activity.handleDecode((Result) message.obj, barcode, scaleFactor);
+      dependence.handleDecode((Result) message.obj, barcode, scaleFactor);
 
     } else if (message.what == R.id.decode_failed) {// We're decoding as fast as possible, so when one decode fails, start another.
       state = State.PREVIEW;

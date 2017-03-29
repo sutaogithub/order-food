@@ -14,6 +14,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVObject;
+import com.bumptech.glide.Glide;
 import com.sutao.base.ActivityController;
 import com.sutao.customview.slideshow.SlideShowView;
 import com.sutao.orderfood.R;
@@ -27,24 +30,68 @@ import java.util.List;
 /**
  * Created by Administrator on 2017/3/12.
  */
-public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodViewHolder> implements View.OnClickListener{
+public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodViewHolder> implements View.OnClickListener {
 
     private List<Food> mData;
+    private List<AVObject> mObjectData;
     private Activity mActivity;
     private LayoutInflater mInflater;
+
+    private DeleteClickListener mDeleteListener;
+
+    @Override
+    public void onClick(View v) {
+        int position = (int) v.getTag();
+        if (mDeleteListener != null) {
+            mDeleteListener.onClick(position,mObjectData.get(position));
+        }
+    }
+
+    public interface DeleteClickListener {
+        void onClick(int posistion,AVObject obj);
+    }
 
     public FoodListAdapter(Activity context) {
         this.mActivity = context;
         mInflater = LayoutInflater.from(context);
+        mData = new ArrayList<>();
+        mObjectData = new ArrayList<>();
     }
 
-    public void setData(List<Food> data) {
+    public void setData(List<AVObject> data) {
         this.mData.clear();
-        this.mData = data;
+        this.mObjectData.clear();
+        mObjectData.addAll(data);
+        setupData(data);
     }
 
-    public void addData(List<Food> data) {
-        this.mData.addAll(data);
+
+
+    private void setupData(List<AVObject> data) {
+        for (AVObject object : data) {
+            Food food = new Food();
+            food.setName(object.getString("name"));
+            food.setDesc(object.getString("desc"));
+            food.setShortDesc(object.getString("shortDesc"));
+            food.setType(object.getInt("type"));
+            food.setPrice(object.getInt("price"));
+            food.setImgUrl(object.getAVFile("img").getUrl());
+            mData.add(food);
+        }
+    }
+    public void setDeleteClickListener(DeleteClickListener listener) {
+        mDeleteListener = listener;
+    }
+
+    public void addData(List<AVObject> data) {
+        mObjectData.addAll(data);
+        setupData(data);
+    }
+
+    public void delete(int position) {
+        mData.remove(position);
+        mObjectData.remove(position);
+        notifyItemRemoved(position);
     }
 
     @Override
@@ -54,70 +101,24 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodVi
     }
 
     @Override
-    public void onBindViewHolder(final FoodViewHolder holder, int position) {
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ActivityOptionsCompat activityOptions = ActivityOptionsCompat.makeSceneTransitionAnimation(mActivity,
-                        ((FoodViewHolder) holder).mImg,
-                        DetailActivity.VIEW_NAME_FOOD_IMAGE);
-                Intent intent = new Intent(mActivity,DetailActivity.class);
-                ActivityCompat.startActivity(mActivity, intent, activityOptions.toBundle());
-            }
-        });
+    public void onBindViewHolder(final FoodViewHolder holder, final int position) {
+        Food food = mData.get(position);
+        Glide.with(mActivity).load(food.getImgUrl()).into(holder.mImg);
+        holder.mName.setText(food.getName());
+        holder.mDesc.setText(food.getDesc());
+        holder.mPrice.setText(food.getPrice() + "");
+        holder.mSelling.setText(mActivity.getString(R.string.food_selling, food.getSelling() + ""));
+        holder.mDelete.setVisibility(View.VISIBLE);
+        holder.mDelete.setTag(position);
+        holder.mDelete.setOnClickListener(this);
     }
 
 
     @Override
     public int getItemCount() {
-        return mData.size() + 2;
+        return mData.size();
     }
 
-    @Override
-    public void onClick(View v) {
-        int id =v.getId();
-        switch (id) {
-            case R.id.view_first:
-                ActivityController.showFoodListActivity(mActivity, Classify.MAIN_FOOD);
-                break;
-            case R.id.view_second:
-                ActivityController.showFoodListActivity(mActivity, Classify.SOUP);
-                break;
-            case R.id.view_third:
-                ActivityController.showFoodListActivity(mActivity, Classify.DRINDK);
-                break;
-            case R.id.view_fourth:
-                ActivityController.showFoodListActivity(mActivity, Classify.SNACK);
-                break;
-
-        }
-    }
-
-
-    public class SlideViewHolder extends RecyclerView.ViewHolder {
-        public SlideShowView showView;
-
-        public SlideViewHolder(View itemView) {
-            super(itemView);
-            showView = (SlideShowView) itemView.findViewById(R.id.view_slide);
-        }
-    }
-
-
-    public class ClasifyViewHolder extends RecyclerView.ViewHolder {
-        public RelativeLayout mFirst;
-        public RelativeLayout mSecond;
-        public RelativeLayout mThird;
-        public RelativeLayout mFourth;
-
-        public ClasifyViewHolder(View itemView) {
-            super(itemView);
-            mFirst = (RelativeLayout) itemView.findViewById(R.id.view_first);
-            mSecond = (RelativeLayout) itemView.findViewById(R.id.view_second);
-            mThird = (RelativeLayout) itemView.findViewById(R.id.view_third);
-            mFourth = (RelativeLayout) itemView.findViewById(R.id.view_fourth);
-        }
-    }
 
     public class FoodViewHolder extends RecyclerView.ViewHolder {
         public ImageView mImg;
@@ -125,6 +126,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodVi
         public TextView mDesc;
         public TextView mSelling;
         public TextView mPrice;
+        public ImageView mDelete;
 
         public FoodViewHolder(View itemView) {
             super(itemView);
@@ -133,6 +135,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodVi
             mDesc = (TextView) itemView.findViewById(R.id.txt_desc);
             mSelling = (TextView) itemView.findViewById(R.id.txt_selling);
             mPrice = (TextView) itemView.findViewById(R.id.txt_price);
+            mDelete = (ImageView) itemView.findViewById(R.id.img_delete);
         }
     }
 

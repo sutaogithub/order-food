@@ -1,11 +1,8 @@
-package com.sutao.orderfood.main;
+package com.sutao.orderfood.buyermain;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,12 +11,13 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.avos.avoscloud.AVObject;
+import com.bumptech.glide.Glide;
 import com.sutao.base.ActivityController;
 import com.sutao.customview.slideshow.SlideShowView;
 import com.sutao.orderfood.R;
 import com.sutao.orderfood.bean.Classify;
 import com.sutao.orderfood.bean.Food;
-import com.sutao.orderfood.detail.DetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,28 +25,48 @@ import java.util.List;
 /**
  * Created by Administrator on 2017/3/12.
  */
-public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener {
+public class BuyerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener {
 
     private static final int TYPE_SLIDE_SHOW = 1;
     private static final int TYPE_CLASSIFY = 2;
     private static final int TYPE_FOOD = 3;
+
     private List<Food> mData;
+    private List<Object> mObjectData;
+
     private Activity mActivity;
     private LayoutInflater mInflater;
 
-    public MainAdapter(Activity context) {
+    public BuyerMainAdapter(Activity context) {
         this.mActivity = context;
         mInflater = LayoutInflater.from(context);
         mData = new ArrayList<>();
+        mObjectData = new ArrayList<>();
     }
 
-    public void setData(List<Food> data) {
-        this.mData.clear();
-        this.mData = data;
+    public void setData(List<AVObject> data) {
+        mData.clear();
+        mObjectData.clear();
+        mObjectData.addAll(data);
+        setupData(data);
     }
 
-    public void addData(List<Food> data) {
-        this.mData.addAll(data);
+    private void setupData(List<AVObject> data) {
+        for (AVObject object : data) {
+            Food food = new Food();
+            food.setName(object.getString("name"));
+            food.setDesc(object.getString("desc"));
+            food.setShortDesc(object.getString("shortDesc"));
+            food.setType(object.getInt("type"));
+            food.setPrice(object.getInt("price"));
+            food.setImgUrl(object.getAVFile("img").getUrl());
+            mData.add(food);
+        }
+    }
+
+    public void addData(List<AVObject> data) {
+        mObjectData.addAll(data);
+        setupData(data);
     }
 
     @Override
@@ -75,7 +93,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         switch (getItemViewType(position)) {
             case TYPE_FOOD:
-                bindFoodHolder(holder);
+                bindFoodHolder((FoodViewHolder) holder,position);
                 break;
             case TYPE_CLASSIFY:
                 bindClasifyHolder(holder);
@@ -93,11 +111,18 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         ((ClasifyViewHolder) holder).mFourth.setOnClickListener(this);
     }
 
-    private void bindFoodHolder(final RecyclerView.ViewHolder holder) {
+    private void bindFoodHolder(final FoodViewHolder holder,int position) {
+        final Food food = mData.get(position-2);
+        Glide.with(mActivity).load(food.getImgUrl()).into(holder.mImg);
+        holder.mName.setText(food.getName());
+        holder.mDesc.setText(food.getDesc());
+        holder.mPrice.setText(food.getPrice() + "");
+        holder.mSelling.setText(mActivity.getString(R.string.food_selling, food.getSelling() + ""));
+        holder.mDelete.setVisibility(View.GONE);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ActivityController.showDetailActivity(mActivity, ((FoodViewHolder) holder).mImg);
+                ActivityController.showDetailActivity(mActivity, holder.mImg,food);
             }
         });
     }
@@ -180,6 +205,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         public TextView mDesc;
         public TextView mSelling;
         public TextView mPrice;
+        public ImageView mDelete;
 
         public FoodViewHolder(View itemView) {
             super(itemView);
@@ -188,6 +214,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
             mDesc = (TextView) itemView.findViewById(R.id.txt_desc);
             mSelling = (TextView) itemView.findViewById(R.id.txt_selling);
             mPrice = (TextView) itemView.findViewById(R.id.txt_price);
+            mDelete = (ImageView) itemView.findViewById(R.id.img_delete);
         }
     }
 

@@ -40,6 +40,7 @@ import com.example.zxing.others.CaptureActivityHandler;
 import com.example.zxing.others.DecodeFormatManager;
 import com.example.zxing.others.FinishListener;
 import com.example.zxing.others.InactivityTimer;
+import com.example.zxing.others.OnDecodeInterface;
 import com.example.zxing.others.ViewfinderView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
@@ -57,7 +58,7 @@ import java.util.Map;
  * @author dswitkin@google.com (Daniel Switkin)
  * @author Sean Owen
  */
-public final class CaptureActivity extends Activity implements SurfaceHolder.Callback {
+public final class CaptureActivity extends Activity implements SurfaceHolder.Callback ,OnDecodeInterface{
 
 
     private static final String TAG = "CaptureActivity";
@@ -264,7 +265,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             mCameraManager.openDriver(surfaceHolder);
             // Creating the handler starts the preview, which can also throw a RuntimeException.
             if (handler == null) {
-                handler = new CaptureActivityHandler(this, mDecodeFormats, mDecodeHints, mCharacterSet, mCameraManager);
+                handler = new CaptureActivityHandler(this, mDecodeFormats, mDecodeHints, mCharacterSet, mCameraManager,this);
             }
         } catch (IOException ioe) {
             Log.w(TAG, ioe);

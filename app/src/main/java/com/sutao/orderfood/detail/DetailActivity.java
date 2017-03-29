@@ -1,5 +1,6 @@
 package com.sutao.orderfood.detail;
 
+import android.app.Application;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,10 +18,18 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.sutao.base.ActivityController;
 import com.sutao.base.BaseActivity;
-import com.sutao.orderfood.utils.FoodSise;
+import com.sutao.orderfood.bean.Food;
 import com.sutao.orderfood.R;
+import com.sutao.orderfood.bean.FoodOrder;
+import com.sutao.orderfood.bean.Size;
+import com.sutao.orderfood.global.Global;
+import com.sutao.orderfood.utils.ToastUtils;
 import com.sutao.orderfood.utils.UIUtils;
+
+import javax.microedition.khronos.opengles.GL;
 
 /**
  * emailTo intern_zhangsutao@cvte.com
@@ -32,6 +41,8 @@ import com.sutao.orderfood.utils.UIUtils;
 public class DetailActivity extends BaseActivity implements View.OnClickListener {
 
     public static final String VIEW_NAME_FOOD_IMAGE = "1";
+    public static final String KEY_FOOD = "key_food";
+
     private RelativeLayout mRootLayout;
     private ImageView mFoodImg;
     private ImageView mShoppingCar;
@@ -45,17 +56,20 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
     private Button mAddBtn;
     private Button mSubBtn;
     private Button mAddShopCarBtn;
-    private View[] mSizesView;
 
     private int mNum;
-    private int mPrice;
     private int mSize;
+
+    private Food mFood;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTopBarShow(false);
         setContentView(R.layout.activity_detail);
+
+        mFood = getIntent().getParcelableExtra(KEY_FOOD);
         initView();
         initData();
     }
@@ -76,8 +90,6 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
         mSubBtn = findView(R.id.btn_sub);
         mAddShopCarBtn = findView(R.id.btn_add_shopping);
 
-        mSizesView = new View[]{findView(R.id.btn_small), findView(R.id.btn_middle), findView(R.id.btn_big)};
-
         mAllPriceTxt.setVisibility(View.GONE);
         mOrder.setVisibility(View.GONE);
 
@@ -86,22 +98,20 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
         mAddBtn.setOnClickListener(this);
         mSubBtn.setOnClickListener(this);
         mAddShopCarBtn.setOnClickListener(this);
-        for (View view : mSizesView) {
-            view.setOnClickListener(this);
-        }
+
 
         ViewCompat.setTransitionName(mFoodImg, VIEW_NAME_FOOD_IMAGE);
     }
 
     private void initData() {
-        mFoodName.setText("鸡扒饭");
-        mFoodSell.setText(getString(R.string.food_selling, "90", "20%"));
-        mPrice = 21;
-        mFoodPrice.setText("21");
-        mFoodDescTxt.setText("牛逼的鸡扒饭");
-        mAllPriceTxt.setText(getString(R.string.food_all_price, "20"));
+        Glide.with(this).load(mFood.getImgUrl()).into(mFoodImg);
+        mFoodName.setText(mFood.getName());
+        mFoodSell.setText(getString(R.string.food_selling, mFood.getSelling()+""));
+        mFoodPrice.setText(mFood.getPrice()+"");
+        mFoodDescTxt.setText(mFood.getDesc());
 
-
+        mNum = Global.getGlobalFoodNum(mFood.getName());
+        updateView();
     }
 
     @Override
@@ -109,10 +119,10 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
         int id = v.getId();
         switch (id) {
             case R.id.btn_add_shopping:
-                showAddSubBtn();
+                addNum();
                 break;
             case R.id.txt_order:
-
+                ActivityController.showConfirmActivity(this);
                 break;
             case R.id.btn_add:
                 addNum();
@@ -122,64 +132,40 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
                 break;
             case R.id.img_shopping_car:
                 break;
-            case R.id.btn_small:
-                select(FoodSise.SMALL);
-                break;
-            case R.id.btn_middle:
-                select(FoodSise.MIDDLE);
-                break;
-            case R.id.btn_big:
-                select(FoodSise.BIG);
-                break;
-
         }
     }
 
-    private void showAddSubBtn() {
-        mNum = 1;
-        mFoodNumTxt.setText(mNum + "");
-        mAllPriceTxt.setText(getString(R.string.food_all_price,mNum * mPrice + ""));
-        mAddShopCarBtn.setVisibility(View.GONE);
-        mOrder.setVisibility(View.VISIBLE);
-        mAllPriceTxt.setVisibility(View.VISIBLE);
-    }
-
-    private void select(int size) {
-        for (View view : mSizesView) {
-            view.setSelected(false);
-        }
-        switch (size) {
-            case FoodSise.SMALL:
-                mSizesView[0].setSelected(true);
-                break;
-            case FoodSise.MIDDLE:
-                mSizesView[1].setSelected(true);
-                break;
-            case FoodSise.BIG:
-                mSizesView[2].setSelected(true);
-                break;
-        }
-        mSize = size;
-    }
 
     private void subNum() {
+
+        Global.deleteOrder(mFood.getName());
         mNum--;
+        updateView();
+    }
+
+
+    private void addNum() {
+        mNum++;
+        Global.addOrder(mFood.getName());
+        updateView();
+        animAdd();
+    }
+
+    private void updateView() {
         mFoodNumTxt.setText(mNum + "");
+        mAllPriceTxt.setText(getString(R.string.food_all_price,mNum * mFood.getPrice() + ""));
+
         if (mNum <= 0) {
             mAddShopCarBtn.setVisibility(View.VISIBLE);
             mOrder.setVisibility(View.GONE);
             mAllPriceTxt.setVisibility(View.GONE);
+        } else{
+            mAddShopCarBtn.setVisibility(View.GONE);
+            mOrder.setVisibility(View.VISIBLE);
+            mAllPriceTxt.setVisibility(View.VISIBLE);
         }
     }
 
-    private void addNum() {
-        mNum++;
-        mFoodNumTxt.setText(mNum + "");
-        mAllPriceTxt.setText(getString(R.string.food_all_price,mNum * mPrice + ""));
-
-
-        animAdd();
-    }
 
     private void animAdd() {
         final TextView view = new TextView(this);

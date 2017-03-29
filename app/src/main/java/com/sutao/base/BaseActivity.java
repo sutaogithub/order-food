@@ -1,5 +1,7 @@
 package com.sutao.base;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
@@ -7,8 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.sutao.orderfood.R;
+import com.sutao.orderfood.utils.DialogUtils;
+
+import org.greenrobot.eventbus.EventBus;
 
 
 /**
@@ -19,6 +25,8 @@ import com.sutao.orderfood.R;
  * @date 2017/3/11
  */
 public class BaseActivity extends AppCompatActivity {
+
+    protected Dialog mDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,9 +42,10 @@ public class BaseActivity extends AppCompatActivity {
                 finish();
             }
         });
+        ((TextView)findView(R.id.txt_title)).setText(getTitle().toString());
     }
 
-    protected void showTopBar(boolean isShow) {
+    protected void setTopBarShow(boolean isShow) {
         if (isShow) {
             findView(R.id.rlayout_top_bar).setVisibility(View.VISIBLE);
         } else {
@@ -53,5 +62,21 @@ public class BaseActivity extends AppCompatActivity {
 
     protected <T extends View> T findView(int id) {
         return (T) findViewById(id);
+    }
+
+    protected void showLoadingDialog() {
+        mDialog = DialogUtils.getLoadingDialog(this);
+        mDialog.show();
+    }
+
+    protected void dismissDialog() {
+        if (mDialog!=null){
+            mDialog.dismiss();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }

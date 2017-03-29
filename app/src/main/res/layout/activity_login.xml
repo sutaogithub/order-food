@@ -10,19 +10,44 @@
         android:layout_marginBottom="50dp"
         android:src="@drawable/ic_launcher"/>
 
-    <Button
-        android:id="@+id/seller_in"
+    <EditText
+        android:id="@+id/edit_account"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:text="@string/seller_in"/>
+        android:singleLine="true"
+        android:hint="请输入账号"/>
+    <EditText
+        android:id="@+id/edit_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="请输入密码"
+        android:inputType="numberPassword"
+        android:singleLine="true"/>
+
+    <RadioGroup
+        android:id="@+id/radio_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+        <RadioButton
+            android:id="@+id/btn_seller"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="店家"/>
+        <RadioButton
+            android:id="@+id/btn_buyer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="食客" />
+    </RadioGroup>
 
     <Button
-        android:id="@+id/buyer_in"
+        android:id="@+id/btn_login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:text="@string/buyer_in"/>
+        android:text="登陆"/>
 
     <Button
         android:id="@+id/btn_signup"

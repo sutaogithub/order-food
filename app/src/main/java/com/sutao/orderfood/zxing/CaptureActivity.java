@@ -31,6 +31,7 @@ import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.avos.avoscloud.AVUser;
 import com.example.zxing.R;
 import com.example.zxing.camera.CameraManager;
 import com.example.zxing.others.AmbientLightManager;
@@ -191,6 +192,9 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     @Override
     protected void onDestroy() {
         mInactivityTimer.shutdown();
+        if (AVUser.getCurrentUser()!=null){
+            AVUser.logOut();
+        }
         super.onDestroy();
     }
 
@@ -253,7 +257,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             showCannotParase(text);
         } else {
             Global.setSellerInfo(info);
-            ActivityController.showMainActivity(this);
+            ActivityController.showBuyerMainActivity(this);
             finish();
         }
 
@@ -304,5 +308,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             handler.sendEmptyMessageDelayed(R.id.restart_preview, delayMS);
         }
     }
+
+
 
 }

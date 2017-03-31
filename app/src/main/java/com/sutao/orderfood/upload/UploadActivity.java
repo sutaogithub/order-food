@@ -15,17 +15,22 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.FindCallback;
 import com.avos.avoscloud.SaveCallback;
 import com.bumptech.glide.load.resource.bitmap.BitmapDecoder;
 import com.sutao.base.BaseActivity;
 import com.sutao.orderfood.R;
 import com.sutao.orderfood.bean.Classify;
 import com.sutao.orderfood.bean.Food;
+import com.sutao.orderfood.global.Global;
 import com.sutao.orderfood.leanclound.LeanCloundHelper;
 import com.sutao.orderfood.utils.BitmapUtils;
 import com.sutao.orderfood.utils.ToastUtils;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Created by Administrator on 2017/3/22.
@@ -33,7 +38,6 @@ import java.io.File;
 public class UploadActivity extends BaseActivity implements View.OnClickListener {
 
     private static final int PHOTO_REQUEST_GALLERY = 1;
-    private static final int PHOTO_REQUEST_CUT = 2;
 
     private Button mGallery;
     private Button mUpload;
@@ -90,6 +94,9 @@ public class UploadActivity extends BaseActivity implements View.OnClickListener
                     case R.id.btn_snack:
                         mType = Classify.SNACK;
                         break;
+                    case R.id.btn_top_sell:
+                        mType = Classify.TOP_SELL;
+                        break;
                 }
             }
         });
@@ -109,26 +116,51 @@ public class UploadActivity extends BaseActivity implements View.OnClickListener
     }
 
     private void save() {
-        String name = mName.getText().toString();
+        if (mBitmap == null) {
+            ToastUtils.makeShortToast(this, "请选择图片");
+            return;
+        }
+        final String name = mName.getText().toString();
         if (TextUtils.isEmpty(name)) {
             ToastUtils.makeShortToast(this, "请输入名字");
             return;
         }
-        String desc = mDesc.getText().toString();
-        if (TextUtils.isEmpty(name)) {
+        final String desc = mDesc.getText().toString();
+        if (TextUtils.isEmpty(desc)) {
             ToastUtils.makeShortToast(this, "请输入描述");
             return;
         }
-        String shortDesc = mShortDesc.getText().toString();
-        if (TextUtils.isEmpty(name)) {
+        final String shortDesc = mShortDesc.getText().toString();
+        if (TextUtils.isEmpty(shortDesc)) {
             ToastUtils.makeShortToast(this, "请输入短描述");
             return;
         }
-        String price = mPrice.getText().toString();
-        if (TextUtils.isEmpty(name)) {
+        final String price = mPrice.getText().toString();
+        if (TextUtils.isEmpty(price)) {
             ToastUtils.makeShortToast(this, "请输入价格");
             return;
         }
+        //检查是否已经上传相同的
+        AVQuery query = new AVQuery("Food");
+        query.whereEqualTo("owner", Global.getRestaurant());
+        query.whereEqualTo("name",name);
+        query.findInBackground(new FindCallback<AVObject>() {
+            @Override
+            public void done(List list, AVException e) {
+                if (e == null) {
+                    if (list!=null&&list.size() >0) {
+                        ToastUtils.makeShortToast(UploadActivity.this,"已经上传过该菜品");
+                    } else {
+                        onSaveFood(name, desc, shortDesc, price);
+                    }
+                } else {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void onSaveFood(String name, String desc, String shortDesc, String price) {
         Food food = new Food();
         food.setName(name);
         food.setDesc(desc);
@@ -143,11 +175,16 @@ public class UploadActivity extends BaseActivity implements View.OnClickListener
                 dismissDialog();
                 if (e == null) {
                     ToastUtils.makeShortToast(UploadActivity.this, "存储成功");
+                    finish();
                 } else {
                     ToastUtils.makeShortToast(UploadActivity.this, e.toString());
                 }
             }
         });
+    }
+
+    private void checkHasSame(String name) {
+
     }
 
     private void openGallery() {

@@ -5,16 +5,16 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.avos.avoscloud.AVObject;
 import com.sutao.base.ActivityController;
 import com.sutao.orderfood.R;
 import com.sutao.orderfood.bean.Classify;
 import com.sutao.orderfood.bean.FoodOrder;
 import com.sutao.orderfood.bean.UserOrder;
+import com.sutao.orderfood.utils.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +27,7 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private static final int TYPE_CLASSIFY = 1;
     private static final int TYPE_FOOD_ORDER = 2;
     private List<UserOrder> mData;
+    private List<AVObject> mObjs;
     private Activity mActivity;
     private LayoutInflater mInflater;
 
@@ -42,7 +43,7 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         return mListener;
     }
 
-    public void setmListener(OnItemClickListener listener) {
+    public void setListener(OnItemClickListener listener) {
         this.mListener = listener;
     }
 
@@ -50,25 +51,40 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         this.mActivity = context;
         mInflater = LayoutInflater.from(context);
         mData = new ArrayList<>();
+        mObjs = new ArrayList<>();
     }
 
-    public void setData(List<UserOrder> data) {
+    public void setData(List<AVObject> data) {
         this.mData.clear();
-        this.mData = data;
+        this.mObjs.clear();
+        this.mObjs.addAll(data);
+        setupData(data);
+        notifyDataSetChanged();
+    }
+
+    private void setupData(List<AVObject> data) {
+        for (AVObject obj : data) {
+            UserOrder order = JsonUtils.parseUserOderJson(obj.getString("order"));
+            mData.add(order);
+        }
     }
 
     public void addData(List<UserOrder> data) {
         this.mData.addAll(data);
     }
 
-    public void addData(UserOrder data) {
-        this.mData.add(0,data);
-        notifyItemInserted(0);
+    public void addData(AVObject data) {
+        this.mObjs.add(data);
+        UserOrder order = JsonUtils.parseUserOderJson(data.getString("order"));
+        this.mData.add(order);
+        notifyDataSetChanged();
     }
 
     public void delete(int position) {
         this.mData.remove(position);
-        notifyItemRemoved(position);
+        AVObject obj =this.mObjs.remove(position);
+        obj.deleteInBackground();
+        notifyDataSetChanged();
     }
 
     @Override
@@ -80,7 +96,7 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             }
 
             case TYPE_CLASSIFY: {
-                View view = mInflater.inflate(R.layout.item_classify_bar, parent, false);
+                View view = mInflater.inflate(R.layout.item_classify_bar_seller, parent, false);
                 return new ClasifyViewHolder(view);
             }
         }
@@ -104,6 +120,7 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         ((ClasifyViewHolder) holder).mSecond.setOnClickListener(this);
         ((ClasifyViewHolder) holder).mThird.setOnClickListener(this);
         ((ClasifyViewHolder) holder).mFourth.setOnClickListener(this);
+        ((ClasifyViewHolder) holder).mFifth.setOnClickListener(this);
     }
 
     private void bindFoodHolder(final FoodViewHolder holder, final int position) {
@@ -122,14 +139,16 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         if (foods.size() >= 3) {
             holder.mOrder3.setVisibility(View.VISIBLE);
+            holder.mDetail.setVisibility(View.VISIBLE);
         } else {
             holder.mOrder3.setVisibility(View.GONE);
+            holder.mDetail.setVisibility(View.GONE);
         }
         holder.mDelete.setOnClickListener(this);
         holder.mDetail.setOnClickListener(this);
         holder.mDelete.setTag(position);
         holder.mDetail.setTag(position);
-    }
+}
 
     @Override
     public int getItemCount() {
@@ -162,14 +181,17 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             case R.id.view_fourth:
                 ActivityController.showFoodListActivity(mActivity, Classify.SNACK);
                 break;
-            case R.id.btn_detail:
+            case R.id.view_fifth:
+                ActivityController.showFoodListActivity(mActivity, Classify.TOP_SELL);
+                break;
+            case R.id.txt_detail:
                 if (mListener!=null) {
                     int position = (Integer) v.getTag()-1;
                     UserOrder order = mData.get(position);
                     mListener.onDetailClick(position,order);
                 }
                 break;
-            case R.id.img_delete:
+            case R.id.txt_delete:
                 if (mListener!=null) {
                     int position = (Integer) v.getTag()-1;
                     UserOrder order = mData.get(position);
@@ -185,6 +207,7 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         public RelativeLayout mSecond;
         public RelativeLayout mThird;
         public RelativeLayout mFourth;
+        public RelativeLayout mFifth;
 
         public ClasifyViewHolder(View itemView) {
             super(itemView);
@@ -196,6 +219,8 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             ((TextView) mThird.findViewById(R.id.txt_tab_classify)).setText("饮料");
             mFourth = (RelativeLayout) itemView.findViewById(R.id.view_fourth);
             ((TextView) mFourth.findViewById(R.id.txt_tab_classify)).setText("小吃");
+            mFifth = (RelativeLayout) itemView.findViewById(R.id.view_fifth);
+            ((TextView) mFifth.findViewById(R.id.txt_tab_classify)).setText("招牌");
         }
     }
 
@@ -204,8 +229,8 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         public TextView mOrder1;
         public TextView mOrder2;
         public TextView mOrder3;
-        public Button mDetail;
-        public ImageView mDelete;
+        public TextView mDetail;
+        public TextView mDelete;
 
         public FoodViewHolder(View itemView) {
             super(itemView);
@@ -213,8 +238,8 @@ public class SellerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             mOrder1 = (TextView) itemView.findViewById(R.id.txt_order1);
             mOrder2 = (TextView) itemView.findViewById(R.id.txt_order2);
             mOrder3 = (TextView) itemView.findViewById(R.id.txt_order3);
-            mDetail = (Button) itemView.findViewById(R.id.btn_detail);
-            mDelete = (ImageView) itemView.findViewById(R.id.img_delete);
+            mDetail = (TextView) itemView.findViewById(R.id.txt_detail);
+            mDelete = (TextView) itemView.findViewById(R.id.txt_delete);
         }
     }
 

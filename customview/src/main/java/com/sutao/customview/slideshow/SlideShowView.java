@@ -50,6 +50,8 @@ public class SlideShowView extends FrameLayout implements View.OnClickListener {
 
     private OnItemClickListener mListener;
 
+    private boolean isStart;
+
     public SlideShowView(Context context) {
         super(context, null);
     }
@@ -169,16 +171,21 @@ public class SlideShowView extends FrameLayout implements View.OnClickListener {
             mAdapter = new SlidePagerAdapter();
         }
         mViewPager.setAdapter(mAdapter);
-        mViewPager.setCurrentItem(mViews.size() * 40000);
-        updateDot(mViews.size() * 40000);
+//        加上有bug
+//        mViewPager.setCurrentItem(mViews.size() * 40000);
+//        updateDot(mViews.size() * 40000);
     }
 
     public void startSlide() {
+        if (isStart) {
+            return;
+        }
+        isStart = true;
         postDelayed(mSlideTask, mSlideInteval);
     }
 
     public void stopSlide() {
-        getHandler().removeCallbacks(mSlideTask);
+        removeCallbacks(mSlideTask);
     }
 
     public int getSlideInteval() {
@@ -187,14 +194,13 @@ public class SlideShowView extends FrameLayout implements View.OnClickListener {
 
     public void setmSlideInteval(int slideInteval) {
         this.mSlideInteval = slideInteval;
-        stopSlide();
         startSlide();
     }
 
     @Override
     public void onClick(View v) {
         if (mListener != null) {
-            mListener.onItemClick((Integer) v.getTag());
+            mListener.onItemClick((Integer) v.getTag(),v);
         }
     }
 
@@ -233,7 +239,7 @@ public class SlideShowView extends FrameLayout implements View.OnClickListener {
 
 
     public interface OnItemClickListener {
-        void onItemClick(int position);
+        void onItemClick(int position,View view);
     }
 
 }

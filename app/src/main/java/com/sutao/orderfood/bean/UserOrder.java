@@ -10,11 +10,13 @@ public class UserOrder {
     private String name;
     private String position;
     private List<FoodOrder> foodOrders;
+    private long timestamp;
 
-    public UserOrder(String name, String position, List<FoodOrder> foodOrders) {
+    public UserOrder(String name, String position, List<FoodOrder> foodOrders,long timestamp) {
         this.name = name;
         this.foodOrders = foodOrders;
         this.position = position;
+        this.timestamp = timestamp;
     }
 
     public String getName() {
@@ -39,5 +41,13 @@ public class UserOrder {
 
     public void setPosition(String position) {
         this.position = position;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 }

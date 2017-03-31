@@ -73,9 +73,15 @@ public class LeanCloundHelper {
         obj.saveInBackground(callback);
     }
 
-    public static void pushMessage(final Context context,String message) {
-        AVPush push = new AVPush();
+    public static void saveOrder(String orderJson, SaveCallback callback) {
+        AVObject obj = new AVObject("Order");
+        obj.put("order",orderJson);
+        obj.put("owner",Global.getRestaurant());
+        obj.saveInBackground(callback);
+    }
 
+    public static void pushMessage(String message,SendCallback callback) {
+        AVPush push = new AVPush();
         AVQuery pushQuery = AVInstallation.getQuery();
         pushQuery.whereEqualTo("installationId", Global.getSellerInfo().getInstallId());
         push.setQuery(pushQuery);
@@ -83,16 +89,8 @@ public class LeanCloundHelper {
         jsonObject.put("action", ACTION_PUSH);
         jsonObject.put("json", message);
         push.setData(jsonObject);
-        push.sendInBackground(new SendCallback() {
-            @Override
-            public void done(AVException e) {
-                if (e == null) {
-                    ToastUtils.makeShortToast(context,"推送成功");
-                } else {
-                    ToastUtils.makeShortToast(context,e.toString());
-                }
-            }
-        });
+        push.sendInBackground(callback);
+        saveOrder(message,null);
     }
 
     public static boolean isSeller() {

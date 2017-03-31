@@ -23,6 +23,7 @@ import com.sutao.orderfood.R;
 import com.sutao.orderfood.bean.Classify;
 import com.sutao.orderfood.bean.Food;
 import com.sutao.orderfood.detail.DetailActivity;
+import com.sutao.orderfood.leanclound.LeanCloundHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +39,37 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodVi
     private LayoutInflater mInflater;
 
     private DeleteClickListener mDeleteListener;
+    private OnItemClickListener mItemListener;
+
+    public OnItemClickListener getItemListener() {
+        return mItemListener;
+    }
+
+    public void setItemListener(OnItemClickListener itemListener) {
+        this.mItemListener = itemListener;
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(int position, Food food,View view);
+    }
 
     @Override
     public void onClick(View v) {
         int position = (int) v.getTag();
-        if (mDeleteListener != null) {
-            mDeleteListener.onClick(position,mObjectData.get(position));
+        int id = v.getId();
+        switch (id) {
+            case R.id.rlayout_root:
+                if (mItemListener != null) {
+                    mItemListener.onItemClick(position,mData.get(position),v);
+                }
+                break;
+            case R.id.txt_delete:
+                if (mDeleteListener != null) {
+                    mDeleteListener.onClick(position,mObjectData.get(position));
+                }
+                break;
         }
+
     }
 
     public interface DeleteClickListener {
@@ -75,6 +100,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodVi
             food.setShortDesc(object.getString("shortDesc"));
             food.setType(object.getInt("type"));
             food.setPrice(object.getInt("price"));
+            food.setSelling(object.getInt("selling"));
             food.setImgUrl(object.getAVFile("img").getUrl());
             mData.add(food);
         }
@@ -108,9 +134,16 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodVi
         holder.mDesc.setText(food.getDesc());
         holder.mPrice.setText(food.getPrice() + "");
         holder.mSelling.setText(mActivity.getString(R.string.food_selling, food.getSelling() + ""));
-        holder.mDelete.setVisibility(View.VISIBLE);
-        holder.mDelete.setTag(position);
-        holder.mDelete.setOnClickListener(this);
+        if(LeanCloundHelper.isSeller()) {
+            holder.mDelete.setVisibility(View.VISIBLE);
+            holder.mDelete.setTag(position);
+            holder.mDelete.setOnClickListener(this);
+        } else {
+            holder.mDelete.setVisibility(View.GONE);
+            holder.itemView.setTag(position);
+            holder.itemView.setOnClickListener(this);
+        }
+
     }
 
 
@@ -126,7 +159,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodVi
         public TextView mDesc;
         public TextView mSelling;
         public TextView mPrice;
-        public ImageView mDelete;
+        public TextView mDelete;
 
         public FoodViewHolder(View itemView) {
             super(itemView);
@@ -135,7 +168,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.FoodVi
             mDesc = (TextView) itemView.findViewById(R.id.txt_desc);
             mSelling = (TextView) itemView.findViewById(R.id.txt_selling);
             mPrice = (TextView) itemView.findViewById(R.id.txt_price);
-            mDelete = (ImageView) itemView.findViewById(R.id.img_delete);
+            mDelete = (TextView) itemView.findViewById(R.id.txt_delete);
         }
     }
 

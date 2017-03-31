@@ -15,8 +15,8 @@ import com.sutao.orderfood.R;
 public class DialogUtils {
 
     public static Dialog getLoadingDialog(Context context) {
-        final Dialog dialog = new Dialog(context);
-        dialog.setContentView(R.layout.dialog_loading);
+        final Dialog dialog = new Dialog(context,R.style.OrderFoodDialog);
+        dialog.getWindow().setContentView(R.layout.dialog_loading);
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
         final ScaleAnimation anim1 = new ScaleAnimation(1,1.5f,1,1.5f,Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);

@@ -21,7 +21,7 @@ public class Global {
     //自己的推送id
     private static String installId;
 
-    //已经点的菜品
+    //食客已经点的菜品
     private static List<FoodOrder> foodOrders = new ArrayList<>();
 
 
@@ -86,6 +86,10 @@ public class Global {
                 return;
             }
         }
+    }
+
+    public static void deleteAllOrder() {
+        foodOrders.clear();
     }
 
 

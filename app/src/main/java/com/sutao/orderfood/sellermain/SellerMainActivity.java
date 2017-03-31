@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
@@ -12,8 +13,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVUser;
+import com.avos.avoscloud.FindCallback;
 import com.sutao.base.ActivityController;
 import com.sutao.base.BaseActivity;
+import com.sutao.customview.pullrefresh.PullToRefreshBase;
 import com.sutao.customview.pullrefresh.PullToRefreshRecycleView;
 import com.sutao.orderfood.R;
 import com.sutao.orderfood.bean.FoodOrder;
@@ -25,6 +32,7 @@ import com.sutao.orderfood.utils.CodeDecodeUtils;
 import com.sutao.orderfood.utils.JsonUtils;
 import com.sutao.orderfood.utils.QrcodeUtils;
 import com.sutao.orderfood.utils.ToastUtils;
+import com.tencent.qc.stat.common.User;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -32,6 +40,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -45,6 +54,7 @@ public class SellerMainActivity extends BaseActivity implements View.OnClickList
     private Dialog mEditDialog;
     private Dialog mQrCodeDialog;
     private Bitmap mQrcode;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,12 +74,38 @@ public class SellerMainActivity extends BaseActivity implements View.OnClickList
                 showEditDialog();
             }
         });
+        mAdapter.setListener(new SellerMainAdapter.OnItemClickListener() {
+            @Override
+            public void onDetailClick(int position, UserOrder order) {
+                Global.setFoodOrders(order.getFoodOrders());
+                ActivityController.showConfirmActivity(SellerMainActivity.this);
+            }
 
+            @Override
+            public void onDeleteClick(int position, UserOrder order) {
+                mAdapter.delete(position);
+
+            }
+        });
+        mRefreshList.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener<RecyclerView>() {
+            @Override
+            public void onPullDownToRefresh(PullToRefreshBase<RecyclerView> refreshView) {
+                initData();
+                mRefreshList.onPullDownRefreshComplete();
+            }
+
+            @Override
+            public void onPullUpToRefresh(PullToRefreshBase<RecyclerView> refreshView) {
+
+            }
+        });
     }
+
+
 
     private void showEditDialog() {
         if (mEditDialog == null) {
-            mEditDialog = new Dialog(this);
+            mEditDialog = new Dialog(this,R.style.OrderFoodDialog);
             mEditDialog.setContentView(R.layout.dialog_edit);
             mEditDialog.setCancelable(true);
             mEditDialog.setCanceledOnTouchOutside(true);
@@ -100,11 +136,26 @@ public class SellerMainActivity extends BaseActivity implements View.OnClickList
     private void initData() {
         mSellerName.setText(LeanCloundHelper.getSellerName());
         mQrcode = QrcodeUtils.createQRCode(CodeDecodeUtils.getQrCodeString());
+
+        AVQuery<AVObject> avQuery = new AVQuery<>("Order");
+        avQuery.orderByDescending("createdAt");
+        avQuery.whereEqualTo("owner", Global.getRestaurant());
+        avQuery.findInBackground(new FindCallback<AVObject>() {
+            @Override
+            public void done(List<AVObject> list, AVException e) {
+                if (e == null) {
+                    mAdapter.setData(list);
+                } else {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void initView() {
         mRefreshList = (PullToRefreshRecycleView) findViewById(R.id.list_order);
         RecyclerView listView = mRefreshList.getRefreshableView();
+        listView.setItemAnimator(new DefaultItemAnimator());
         mAdapter = new SellerMainAdapter(this);
         listView.setAdapter(mAdapter);
 
@@ -112,6 +163,7 @@ public class SellerMainActivity extends BaseActivity implements View.OnClickList
 
         findView(R.id.img_upload).setOnClickListener(this);
         findView(R.id.img_qrcode).setOnClickListener(this);
+        findView(R.id.btn_logout).setOnClickListener(this);
     }
 
 
@@ -125,13 +177,18 @@ public class SellerMainActivity extends BaseActivity implements View.OnClickList
             case R.id.img_qrcode:
                 showQrcodeDialog();
                 break;
+            case R.id.btn_logout:
+                AVUser.logOut();
+                ActivityController.showLoginActivity(this);
+                finish();
+                break;
         }
     }
 
     private void showQrcodeDialog() {
         if (mQrCodeDialog == null) {
-            mQrCodeDialog = new Dialog(this);
-            mQrCodeDialog.setContentView(R.layout.dialog_qrcode);
+            mQrCodeDialog = new Dialog(this,R.style.OrderFoodDialog);
+            mQrCodeDialog.getWindow().setContentView(R.layout.dialog_qrcode);
 
             mQrCodeDialog.findViewById(R.id.btn_save).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -143,7 +200,6 @@ public class SellerMainActivity extends BaseActivity implements View.OnClickList
             });
             ImageView img = (ImageView) mQrCodeDialog.findViewById(R.id.img_qrcode);
             img.setImageBitmap(mQrcode);
-
         }
         mQrCodeDialog.show();
     }
@@ -157,15 +213,10 @@ public class SellerMainActivity extends BaseActivity implements View.OnClickList
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(JsonEvent event) {
         String jsonStr = event.getJsonStr();
-        try {
-            JSONObject json = new JSONObject(jsonStr);
-            String name = json.getString("user");
-            String position = json.getString("position");
-            List<FoodOrder> foods = JsonUtils.parseJson(json.getString("order"));
-            UserOrder order = new UserOrder(name,position,foods);
-            mAdapter.addData(order);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        AVObject obj = new AVObject("Order");
+        obj.put("order",jsonStr);
+        obj.put("owner",Global.getRestaurant());
+        mAdapter.addData(obj);
     }
+
 }

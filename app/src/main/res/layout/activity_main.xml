@@ -10,9 +10,23 @@
 
     <include layout="@layout/buyer_top_bar"/>
 
-    <com.sutao.customview.pullrefresh.PullToRefreshRecycleView
-        android:id="@+id/list_content"
+
+
+    <android.support.v4.widget.DrawerLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+
+        <com.sutao.customview.pullrefresh.PullToRefreshRecycleView
+            android:id="@+id/list_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <include
+            layout="@layout/left_menu"
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"/>
+
+    </android.support.v4.widget.DrawerLayout>
 
 </LinearLayout>

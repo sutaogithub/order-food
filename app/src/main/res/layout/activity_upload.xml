@@ -76,6 +76,12 @@
             android:layout_height="wrap_content"
             android:text="小吃"/>
 
+        <RadioButton
+            android:id="@+id/btn_top_sell"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="招牌"/>
+
     </RadioGroup>
 
     <Button

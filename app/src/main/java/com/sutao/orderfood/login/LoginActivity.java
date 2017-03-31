@@ -14,23 +14,9 @@ import com.avos.avoscloud.LogInCallback;
 import com.sutao.base.ActivityController;
 import com.sutao.base.BaseActivity;
 import com.sutao.orderfood.R;
-import com.sutao.orderfood.bean.Classify;
-import com.sutao.orderfood.bean.Food;
-import com.sutao.orderfood.bean.FoodOrder;
-import com.sutao.orderfood.bean.UserOrder;
+import com.sutao.orderfood.global.Global;
 import com.sutao.orderfood.leanclound.LeanCloundHelper;
-import com.sutao.orderfood.sellermain.JsonEvent;
-import com.sutao.orderfood.utils.JsonUtils;
 import com.sutao.orderfood.utils.ToastUtils;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Administrator on 2017/3/22.
@@ -45,9 +31,25 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        checkHasLogin();
         setContentView(R.layout.activity_login);
         initView();
         initEvent();
+    }
+
+    private void checkHasLogin() {
+        if (AVUser.getCurrentUser() != null){
+            if (LeanCloundHelper.isSeller()) {
+                ActivityController.showSellerMainActivity(this);
+            } else {
+                if (Global.getSellerInfo() != null) {
+                    ActivityController.showBuyerMainActivity(this);
+                } else {
+                    ActivityController.showCaptureActivity(this);
+                }
+            }
+            finish();
+        }
     }
 
     private void initEvent() {
@@ -98,7 +100,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 //
 //                foods.add(food1);
 //                foods.add(food2);
-//                LeanCloundHelper.pushMessage(this,JsonUtils.getJson(foods,"728"));
+//                LeanCloundHelper.pushMessage(this,JsonUtils.getUserOrderJson(foods,"728"));
                 break;
         }
     }
@@ -110,9 +112,11 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             ToastUtils.makeShortToast(this, "账号密码不能为空");
             return;
         }
+        showLoadingDialog();
         AVUser.logInInBackground(account, password, new LogInCallback<AVUser>() {
             @Override
             public void done(AVUser avUser, AVException e) {
+                dismissDialog();
                 if (e == null) {
                     boolean isSeller = (boolean) avUser.get(LeanCloundHelper.KEY_IS_SELLER);
                     if (isSeller != mIsSeller) {

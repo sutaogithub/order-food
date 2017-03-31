@@ -13,6 +13,10 @@ import android.widget.TextView;
 
 import com.avos.avoscloud.AVObject;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.Target;
 import com.sutao.base.ActivityController;
 import com.sutao.customview.slideshow.SlideShowView;
 import com.sutao.orderfood.R;
@@ -31,8 +35,11 @@ public class BuyerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private static final int TYPE_CLASSIFY = 2;
     private static final int TYPE_FOOD = 3;
 
+
+    private List<Food> mTopSellFood;
     private List<Food> mData;
     private List<Object> mObjectData;
+    private List<AVObject> mTopSellObj;
 
     private Activity mActivity;
     private LayoutInflater mInflater;
@@ -42,16 +49,33 @@ public class BuyerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         mInflater = LayoutInflater.from(context);
         mData = new ArrayList<>();
         mObjectData = new ArrayList<>();
+        mTopSellFood = new ArrayList<>();
+        mTopSellObj = new ArrayList<>();
     }
 
     public void setData(List<AVObject> data) {
         mData.clear();
         mObjectData.clear();
         mObjectData.addAll(data);
-        setupData(data);
+        setupData(data,mData);
+        notifyDataSetChanged();
     }
 
-    private void setupData(List<AVObject> data) {
+    public void addData(List<AVObject> data) {
+        mObjectData.addAll(data);
+        setupData(data,mData);
+        notifyDataSetChanged();
+    }
+
+    public void setTopSellData(List<AVObject> data) {
+        mTopSellFood.clear();
+        mTopSellObj.clear();
+        mTopSellObj.addAll(data);
+        setupData(data,mTopSellFood);
+        notifyDataSetChanged();
+    }
+
+    private void setupData(List<AVObject> data,List<Food> container) {
         for (AVObject object : data) {
             Food food = new Food();
             food.setName(object.getString("name"));
@@ -59,15 +83,13 @@ public class BuyerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             food.setShortDesc(object.getString("shortDesc"));
             food.setType(object.getInt("type"));
             food.setPrice(object.getInt("price"));
+            food.setSelling(object.getInt("selling"));
             food.setImgUrl(object.getAVFile("img").getUrl());
-            mData.add(food);
+            container.add(food);
         }
     }
 
-    public void addData(List<AVObject> data) {
-        mObjectData.addAll(data);
-        setupData(data);
-    }
+
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -127,13 +149,40 @@ public class BuyerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         });
     }
 
-    private void bindSlideHolder(RecyclerView.ViewHolder holder) {
-        List<Bitmap> bitmaps = new ArrayList<>();
-        bitmaps.add(BitmapFactory.decodeResource(mActivity.getResources(), R.drawable.food_1));
-        bitmaps.add(BitmapFactory.decodeResource(mActivity.getResources(), R.drawable.food_2));
-        bitmaps.add(BitmapFactory.decodeResource(mActivity.getResources(), R.drawable.food_3));
-        bitmaps.add(BitmapFactory.decodeResource(mActivity.getResources(), R.drawable.food_4));
-        ((SlideViewHolder) holder).showView.setBitmaps(bitmaps);
+    private void bindSlideHolder(final RecyclerView.ViewHolder holder) {
+        final List<Bitmap> bitmaps = new ArrayList<>();
+        if (mTopSellFood.size() == 0) {
+            holder.itemView.setVisibility(View.GONE);
+            return;
+        } else {
+            holder.itemView.setVisibility(View.VISIBLE);
+        }
+        ((SlideViewHolder)holder).showView.setOnItemClickListener(new SlideShowView.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position,View view) {
+                Food food = mTopSellFood.get(position);
+
+                ActivityController.showDetailActivity(mActivity, view,food);
+            }
+        });
+        for (Food food : mTopSellFood) {
+            Glide.with(mActivity).load(food.getImgUrl()).asBitmap().into(new SimpleTarget<Bitmap>() {
+
+                @Override
+                public void onResourceReady(Bitmap resource, GlideAnimation glideAnimation) {
+                    // Do something with bitmap here.
+                    bitmaps.add(resource);
+                    if (bitmaps.size() == mTopSellFood.size()) {
+                        ((SlideViewHolder) holder).showView.setBitmaps(bitmaps);
+                        ((SlideViewHolder) holder).showView.setmSlideInteval(2500);
+                        ((SlideViewHolder) holder).showView.startSlide();
+
+                    }
+                }
+
+            });
+        }
+
     }
 
     @Override
@@ -196,6 +245,10 @@ public class BuyerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             mSecond = (RelativeLayout) itemView.findViewById(R.id.view_second);
             mThird = (RelativeLayout) itemView.findViewById(R.id.view_third);
             mFourth = (RelativeLayout) itemView.findViewById(R.id.view_fourth);
+            ((TextView) mFirst.findViewById(R.id.txt_tab_classify)).setText("主食");
+            ((TextView) mSecond.findViewById(R.id.txt_tab_classify)).setText("汤");
+            ((TextView) mThird.findViewById(R.id.txt_tab_classify)).setText("饮料");
+            ((TextView) mFourth.findViewById(R.id.txt_tab_classify)).setText("小吃");
         }
     }
 
@@ -205,7 +258,7 @@ public class BuyerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         public TextView mDesc;
         public TextView mSelling;
         public TextView mPrice;
-        public ImageView mDelete;
+        public TextView mDelete;
 
         public FoodViewHolder(View itemView) {
             super(itemView);
@@ -214,7 +267,7 @@ public class BuyerMainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             mDesc = (TextView) itemView.findViewById(R.id.txt_desc);
             mSelling = (TextView) itemView.findViewById(R.id.txt_selling);
             mPrice = (TextView) itemView.findViewById(R.id.txt_price);
-            mDelete = (ImageView) itemView.findViewById(R.id.img_delete);
+            mDelete = (TextView) itemView.findViewById(R.id.txt_delete);
         }
     }
 

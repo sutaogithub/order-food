@@ -44,7 +44,18 @@ public class ConfirmAdapter extends RecyclerView.Adapter<ConfirmAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         FoodOrder order = mDatas.get(position);
-        Log.d(TAG, "onBindViewHolder: "+position+"   "+mDatas.size());
+        if (position == 0) {
+            if (mDatas.size() == 1) {
+                holder.mOrder.setBackgroundResource(R.drawable.coner_rect);
+            } else {
+                holder.mOrder.setBackgroundResource(R.drawable.top_corner_rect);
+            }
+
+        }else if (position == mDatas.size()-1) {
+            holder.mOrder.setBackgroundResource(R.drawable.bottom_corner_rect);
+        } else {
+            holder.mOrder.setBackgroundResource(R.drawable.middle_rect_corner);
+        }
         holder.mOrder.setText(mContext.getString(R.string.item_order,order.getName(),order.getNum()));
     }
 

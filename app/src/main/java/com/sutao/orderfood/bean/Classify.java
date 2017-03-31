@@ -9,4 +9,6 @@ public interface Classify {
     int SOUP =2;
     int DRINDK = 3;
     int SNACK = 4;
+    //轮播菜式
+    int TOP_SELL = 5;
 }

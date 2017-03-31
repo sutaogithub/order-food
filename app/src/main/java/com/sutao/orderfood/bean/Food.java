@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
  * Created by Administrator on 2017/3/22.
  */
 public class Food implements Parcelable{
+
     private Bitmap img;
     private String name;
     private String desc;
@@ -27,8 +28,7 @@ public class Food implements Parcelable{
 
     private String imgUrl;
 
-    //是否是首页
-    private boolean isHeader;
+
 
     public Food() {
 
@@ -46,7 +46,6 @@ public class Food implements Parcelable{
         type = in.readInt();
         num = in.readInt();
         imgUrl = in.readString();
-        isHeader = in.readByte() != 0;
     }
 
     @Override
@@ -61,7 +60,6 @@ public class Food implements Parcelable{
         dest.writeInt(type);
         dest.writeInt(num);
         dest.writeString(imgUrl);
-        dest.writeByte((byte) (isHeader ? 1 : 0));
     }
 
     @Override
@@ -81,13 +79,7 @@ public class Food implements Parcelable{
         }
     };
 
-    public boolean isHeader() {
-        return isHeader;
-    }
 
-    public void setHeader(boolean header) {
-        isHeader = header;
-    }
 
     public int getSize() {
         return size;

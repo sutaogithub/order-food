@@ -115,6 +115,13 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        mNum = Global.getGlobalFoodNum(mFood.getName());
+        updateView();
+    }
+
+    @Override
     public void onClick(View v) {
         int id = v.getId();
         switch (id) {

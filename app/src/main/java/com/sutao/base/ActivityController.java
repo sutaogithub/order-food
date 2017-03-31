@@ -13,6 +13,7 @@ import com.sutao.orderfood.confirm.ConfirmActivity;
 import com.sutao.orderfood.detail.DetailActivity;
 import com.sutao.orderfood.foodlist.FoodListActivity;
 import com.sutao.orderfood.buyermain.BuyerMainActivity;
+import com.sutao.orderfood.login.LoginActivity;
 import com.sutao.orderfood.signup.SignUpActivity;
 import com.sutao.orderfood.upload.UploadActivity;
 import com.sutao.orderfood.sellermain.SellerMainActivity;
@@ -39,7 +40,7 @@ public class ActivityController {
         ActivityCompat.startActivity(context, intent, activityOptions.toBundle());
     }
 
-    public static void showMainActivity(Context context) {
+    public static void showBuyerMainActivity(Context context) {
         Intent intent =new Intent(context, BuyerMainActivity.class);
         context.startActivity(intent);
     }
@@ -66,6 +67,11 @@ public class ActivityController {
 
     public static void showCaptureActivity(Context context) {
         Intent intent = new Intent(context, CaptureActivity.class);
+        context.startActivity(intent);
+    }
+
+    public static void showLoginActivity(Context context) {
+        Intent intent = new Intent(context, LoginActivity.class);
         context.startActivity(intent);
     }
 

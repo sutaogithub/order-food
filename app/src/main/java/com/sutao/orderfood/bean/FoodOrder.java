@@ -10,6 +10,7 @@ public class FoodOrder {
     private int num;
 
 
+
     public FoodOrder(String name, int num) {
         this.name = name;
         this.num = num;
